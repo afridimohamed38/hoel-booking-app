@@ -4,6 +4,7 @@ df = pd.read_csv("hotels.csv", dtype={"id": str})
 df_cards = pd.read_csv("cards.csv", dtype=str).to_dict(orient="records")
 df_cards_security = pd.read_csv("card_security.csv", dtype=str)
 
+
 class Hotel:
     def __init__(self, hotel_id):
         self.hotel_id = hotel_id
@@ -21,6 +22,11 @@ class Hotel:
             return True
         else:
             return False
+
+
+class SpaHotel(Hotel):
+    def book_spa_package(self):
+        pass
 
 
 class ReservationTicket:
@@ -50,6 +56,7 @@ class CreditCard:
         else:
             return False
 
+
 class SecureCreditCard(CreditCard):
     def authenticate(self, given_password):
         password = df_cards_security.loc[df_cards_security["number"] == self.number, "password"].squeeze()
@@ -58,10 +65,27 @@ class SecureCreditCard(CreditCard):
         else:
             return False
 
+
+class SpaTicket:
+
+    def __init__(self, customer_name, hotel_object):
+        self.customer_name = customer_name
+        self.hotel = hotel_object
+
+    def generate(self):
+        content = f"""
+        Thank you for your SPA reservation!
+        Here is your booking details
+        Name:{self.customer_name}
+        Hotel name: {self.hotel.name}
+        """
+        return content
+
+
 # this below is the programming main loop
 print(df)
 hotel_ID = input("Enter a hotel id: ")
-hotel = Hotel(hotel_ID)
+hotel = SpaHotel(hotel_ID)
 # print(hotel)
 if hotel.available():
     # card_number = input("Enter your card number: ")
@@ -76,6 +100,11 @@ if hotel.available():
             hotel.book()
             reservation_ticket = ReservationTicket(customer_name=name, hotel_object=hotel)
             print(reservation_ticket.generate())
+            spa = input("Do you want to book a spa package:")
+            if spa == "yes":
+                hotel.book_spa_package()
+                spa_ticket = SpaTicket(customer_name=name, hotel_object=hotel)
+                print(spa_ticket.generate())
         else:
             print("Credit card authentication failed")
     else:
